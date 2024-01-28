@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/asegs/joust/issues"
   },
-  "homepage": "https://github.com/asegs/joust#readme"
+  "homepage": "https://github.com/asegs/joust#readme",
+  "dependencies": {
+    "mongodb": "6.3"
+  }
 }
