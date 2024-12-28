@@ -8,9 +8,19 @@ export async function getTournaments() {
 }
 
 export async function getTournamentsByName(name: string) {
-    return prisma.tournament.findMany({where: {
-            name: {
-                contains: name,
+    return prisma.tournament.findMany(
+        {
+            where: {
+                name: {
+                    contains: name,
+                },
             },
-        },})
+            include: {
+                entries: {
+                    include: {
+                        player: true
+                    }
+                }
+            }
+        })
 }

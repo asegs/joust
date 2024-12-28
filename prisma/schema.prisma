@@ -21,4 +21,42 @@ model Tournament {
   location String
   maxPlayers Int
   description String
+  entries Entry[]
+  games Game[]
+}
+
+model Player {
+  id Int @id @default(autoincrement())
+  firstName String
+  lastName String
+  email String?
+  uscfProfile String?
+  fideProfile String?
+  chessComProfile String?
+  lichessProfile String?
+  neutralRating Int?
+  entries Entry[]
+  whiteGames Game[] @relation("WhiteGames")
+  blackGames Game[] @relation("BlackGames")
+}
+
+model Entry {
+  id Int @id @default(autoincrement())
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+  player Player @relation(fields: [playerId], references: [id])
+  playerId Int
+}
+
+model Game {
+  id Int @id @default(autoincrement())
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+  round Int
+  white Player @relation("WhiteGames", fields: [whiteId], references: [id])
+  whiteId Int
+  black Player @relation("BlackGames",fields: [blackId], references: [id])
+  blackId Int
+  result Int
+  pgn String @db.LongText
 }
