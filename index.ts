@@ -6,6 +6,7 @@ const app = express()
 const port = 3000
 app.set('view engine', 'pug');
 app.use(favicon(path.join(__dirname,'public','images','favicon.ico')));
+app.use(express.urlencoded({ extended: true }));
 
 app.listen(port, () => {
     console.log(`Joust running on ${port}`)

@@ -2,9 +2,43 @@ html
     head
         title="Joust!"
     body
+        h2
+            a(href="/") Joust
         h4=player.firstName + " " + player.lastName
         p="Neutral Rating: " + player.neutralRating
-        p=player.uscfProfile ? "USCF Profile: " + player.uscfProfile : "No linked USCF profile"
-        p=player.fideProfile ? "FIDE Profile: " + player.fideProfile : "No linked FIDE profile"
-        p=player.lichessProfile ? "Lichess Profile: " + player.lichessProfile : "No linked Lichess profile"
-        p=player.chessComProfile ? " Chess.com Profile: " + player.chessComProfile : "No linked Chess.com profile"
+        // USCF conditional
+        if player.uscfProfile
+            a(href=player.uscfProfile target="_blank") USCF Profile
+            br
+            br
+        else
+            p="No linked USCF profile"
+
+        // FIDE conditional
+        if player.fideProfile
+            a(href=player.fideProfile target="_blank") FIDE Profile
+            br
+            br
+        else
+            p="No linked FIDE profile"
+
+        // Lichess profile
+        if player.lichessProfile
+            a(href=player.lichessProfile target="_blank") Lichess Profile
+            br
+            br
+        else
+            p="No linked Lichess profile"
+
+
+        // Chess.com profile
+        if player.chessComProfile
+            a(href=player.chessComProfile target="_blank") Chess.com Profile
+            br
+        else
+            p="No linked Chess.com profile"
+
+        p="Active Tournaments:"
+        each entry in player.entries
+            li
+                a(href=`/${entry.tournament.id}`) #{entry.tournament.name}

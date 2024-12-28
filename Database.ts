@@ -10,6 +10,14 @@ const INCLUDE_PLAYERS = {
         }
 }
 
+const INCLUDE_TOURNAMENTS = {
+    entries: {
+        include: {
+            tournament: true
+        }
+    }
+}
+
 const INCLUDE_PLAYERS_GAMES = {
     entries: {
         include: {
@@ -51,7 +59,8 @@ export async function getPlayerById(id: number) {
     return prisma.player.findUnique({
         where: {
             id: id
-        }
+        },
+        include: INCLUDE_TOURNAMENTS
     });
 }
 
