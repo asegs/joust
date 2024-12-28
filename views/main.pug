@@ -1,0 +1,11 @@
+html
+    head
+        title="Joust!"
+    body
+        h2="Joust"
+        h3="A chess tournament host."
+        p="All tournaments:"
+        each val in tournaments
+            -const formattedTournament= val.name + " (" + val.entries.length + "/" + val.maxPlayers + ") " + val.startDate
+            li
+                a(href=`/${val.id}`) #{formattedTournament}

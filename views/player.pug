@@ -1,0 +1,10 @@
+html
+    head
+        title="Joust!"
+    body
+        h4=player.firstName + " " + player.lastName
+        p="Neutral Rating: " + player.neutralRating
+        p=player.uscfProfile ? "USCF Profile: " + player.uscfProfile : "No linked USCF profile"
+        p=player.fideProfile ? "FIDE Profile: " + player.fideProfile : "No linked FIDE profile"
+        p=player.lichessProfile ? "Lichess Profile: " + player.lichessProfile : "No linked Lichess profile"
+        p=player.chessComProfile ? " Chess.com Profile: " + player.chessComProfile : "No linked Chess.com profile"
