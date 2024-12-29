@@ -64,6 +64,17 @@ export async function getPlayerById(id: number) {
     });
 }
 
+export async function createTournament(payload: any) {
+    payload.startDate = new Date(payload.startDate);
+    payload.endDate = new Date(payload.endDate);
+    payload.maxPlayers = parseInt(payload.maxPlayers);
+    return prisma.tournament.create(
+        {
+            data: payload
+        }
+    )
+}
+
 async function formatDateForTournament(tournament: Tournament): Promise<Tournament> {
     return formatDate(tournament);
 }

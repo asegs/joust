@@ -4,8 +4,11 @@ html
     body
         h2="Joust"
         h3="A chess tournament host."
+        h4
+            a(href="/create") Create tournament
         p="All tournaments:"
         each val in tournaments
             -const formattedTournament= val.name + " (" + val.entries.length + "/" + val.maxPlayers + ") " + val.startDate
             li
                 a(href=`/${val.id}`) #{formattedTournament}
+

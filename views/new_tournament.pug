@@ -1,0 +1,21 @@
+html(lang='en')
+h2
+    a(href='/') Joust
+
+h3="Create tournament"
+form(id="login" action="/create" method="post")
+    input(type="text", name="name", placeholder="Tournament name")
+    br
+    // Let's make this not a form, so we can do textareas or a richtext description
+    // Maybe a button with a passed function to pull from all value fields?
+    input(type="text", name="description", placeholder="Description")
+    br
+    input(type="text", name="location", placeholder="Location")
+    br
+    input(type="datetime-local", name="startDate", placeholder="Start date")
+    br
+    input(type="datetime-local", name="endDate", placeholder="End date")
+    br
+    input(type="number", name="maxPlayers", placeholder="Max players")
+    br
+    input(type="submit" value="Create tournament")

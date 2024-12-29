@@ -1,6 +1,6 @@
 import express = require('express');
 import * as path from "path";
-import {getPlayerById, getTournamentById, getTournaments, getTournamentsByName} from "./Database";
+import {createTournament, getPlayerById, getTournamentById, getTournaments, getTournamentsByName} from "./Database";
 import favicon = require('serve-favicon');
 const app = express()
 const port = 3000
@@ -28,11 +28,18 @@ app.get("/", (req, res) => {
     getTournaments().then(result => res.render('main', {tournaments: result}));
 })
 
-app.get("/:tournamentId", (req, res) => {
+app.get("/:tournamentId(\\d+)", (req, res) => {
     getTournamentById(parseInt(req.params.tournamentId)).then(result => res.render('tournament', {tournament: result}))
 })
 
-app.get("/player/:playerId", (req, res) => {
+app.get("/player/:playerId(\\d+)", (req, res) => {
     getPlayerById(parseInt(req.params.playerId)).then(result => res.render('player', {player: result}))
 })
 
+app.get("/create", (req, res) => {
+    res.render('new_tournament')
+})
+
+app.post("/create", (req, res) => {
+    createTournament(req.body).then(result => res.redirect("/" + result.id))
+})
