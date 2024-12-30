@@ -65,8 +65,11 @@ authRouter.get("/callback", (req, res, next) => {
     })(req, res, next);
 });
 
-authRouter.get("/logout", (req, res) => {
-    req.logOut();
+authRouter.get("/logout", (req, res, next) => {
+    req.logOut(function(err) {
+        if (err) { return next(err); }
+        res.redirect('/');
+    });
 
     let returnTo = req.protocol + "://" + req.hostname;
     const port = req.connection.localPort;
@@ -88,5 +91,4 @@ authRouter.get("/logout", (req, res) => {
     });
     logoutURL.search = searchString;
 
-    res.redirect(logoutURL);
 });
