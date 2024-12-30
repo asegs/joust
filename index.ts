@@ -2,11 +2,22 @@ import express = require('express');
 import * as path from "path";
 import {createTournament, getPlayerById, getTournamentById, getTournaments, getTournamentsByName} from "./Database";
 import favicon = require('serve-favicon');
+import expressSession = require("express-session");
+import * as passport from "passport";
+require("dotenv").config();
+import {authRouter, session, strategy} from "./Auth"
+
 const app = express()
-const port = 3000
+const port = process.env.PORT
 app.set('view engine', 'pug');
 app.use(favicon(path.join(__dirname,'public','images','favicon.ico')));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public/css'))
+
+app.use(passport.initialize());
+app.use(expressSession(session));
+app.use(passport.session());
+app.use("/", authRouter);
 
 app.listen(port, () => {
     console.log(`Joust running on ${port}`)
