@@ -18,6 +18,11 @@ app.use(passport.initialize());
 app.use(expressSession(session));
 app.use(passport.session());
 app.use("/", authRouter);
+app.use((req, res, next) => {
+    res.locals.isAuthenticated = req.isAuthenticated();
+    res.locals.user = req.user;
+    next();
+});
 
 app.listen(port, () => {
     console.log(`Joust running on ${port}`)
