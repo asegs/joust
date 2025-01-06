@@ -10,6 +10,9 @@ html
         h4=tournament.description
         p="Starts: " + tournament.startDate
         p="Ends: " + tournament.endDate
+        //TODO: Need to check if you're in it
+        form(id="register" action=`/register/${tournament.id}` method="post")
+            input(type="submit" value="Register")
         each entry in tournament.entries
             -const formattedPlayer = entry.player.lastName + ", " + entry.player.firstName + " (" + entry.player.neutralRating + ")"
             li

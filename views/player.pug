@@ -5,39 +5,61 @@ html
     body
         h2
             a(href="/") Joust
-        h4=player.firstName + " " + player.lastName
-        p="Neutral Rating: " + player.neutralRating
-        // USCF conditional
-        if player.uscfProfile
-            a(href=player.uscfProfile target="_blank") USCF Profile
-            br
-            br
-        else
-            p="No linked USCF profile"
+        unless isAuthenticated
+            h3
+                a(href="/login") Login
+        if isAuthenticated && authedPlayer && authedPlayer.id===player.id
+            form(id="update-player" action=`/player/${player.id}` method="post")
+                input(type="text", name="firstName", placeHolder="Magnus", value=player.firstName)
+                br
+                input(type="text", name="lastName", placeholder="Carlsen", value=player.lastName)
+                br
+                input(type="text", name="uscfProfile", placeHolder="USCF profile link", value=player.uscfProfile)
+                br
+                input(type="text", name="fideProfile", placeholder="FIDE profile link", value=player.fideProfile)
+                br
+                input(type="text", name="chessComProfile", placeholder="Chess.com profile link", value=player.chessComProfile)
+                br
+                input(type="text", name="lichessProfile", placeholder="Lichess profile link", value=player.lichessProfile)
+                br
+                input(type="number", name="neutralRating", placeholder="Rating", value=player.neutralRating)
+                br
+                input(type="submit" value="Update profile")
 
-        // FIDE conditional
-        if player.fideProfile
-            a(href=player.fideProfile target="_blank") FIDE Profile
-            br
-            br
         else
-            p="No linked FIDE profile"
+            h4=player.firstName + " " + player.lastName
+            p="Neutral Rating: " + player.neutralRating
+            // USCF conditional
+            if player.uscfProfile
+                a(href=player.uscfProfile target="_blank") USCF Profile
+                br
+                br
+            else
+                p="No linked USCF profile"
 
-        // Lichess profile
-        if player.lichessProfile
-            a(href=player.lichessProfile target="_blank") Lichess Profile
-            br
-            br
-        else
-            p="No linked Lichess profile"
+            // FIDE conditional
+            if player.fideProfile
+                a(href=player.fideProfile target="_blank") FIDE Profile
+                br
+                br
+            else
+                p="No linked FIDE profile"
+
+            // Lichess profile
+            if player.lichessProfile
+                a(href=player.lichessProfile target="_blank") Lichess Profile
+                br
+                br
+            else
+                p="No linked Lichess profile"
 
 
-        // Chess.com profile
-        if player.chessComProfile
-            a(href=player.chessComProfile target="_blank") Chess.com Profile
-            br
-        else
-            p="No linked Chess.com profile"
+            // Chess.com profile
+            if player.chessComProfile
+                a(href=player.chessComProfile target="_blank") Chess.com Profile
+                br
+            else
+                p="No linked Chess.com profile"
 
         p="Active Tournaments:"
         each entry in player.entries

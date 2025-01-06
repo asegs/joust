@@ -1,9 +1,12 @@
-export const authRouter = express.Router();
+import * as express from "express";
+import {Express} from "express";
 import * as passport from "passport";
+import {createPlayerByEmail, getPlayerByEmail} from "./Database";
+
+export const authRouter = express.Router();
 import querystring = require("querystring");
 import Auth0Strategy = require("passport-auth0");
-
-import * as express from 'express';
+import expressSession = require("express-session");
 
 require("dotenv").config();
 
@@ -48,6 +51,12 @@ authRouter.get(
 
 authRouter.get("/callback", (req, res, next) => {
     passport.authenticate("auth0", (err, user, info) => {
+        getPlayerByEmail(user.emails[0].value)
+            .then(p => {
+                if (!p) {
+                    createPlayerByEmail(user.emails[0].value);
+                }
+            });
         if (err) {
             return next(err);
         }
@@ -85,10 +94,25 @@ authRouter.get("/logout", (req, res, next) => {
         `https://${process.env.AUTH0_DOMAIN}/v2/logout`
     );
 
-    const searchString = querystring.stringify({
+    logoutURL.search = querystring.stringify({
         client_id: process.env.AUTH0_CLIENT_ID,
         returnTo: returnTo
     });
-    logoutURL.search = searchString;
 
 });
+
+export function configureMainWithAuth(router: Express) {
+    router.use(passport.initialize());
+    router.use(expressSession(session));
+    router.use(passport.session());
+    router.use("/", authRouter);
+    router.use((req, res, next) => {
+        res.locals.isAuthenticated = req.isAuthenticated();
+        res.locals.user = req.user;
+        next();
+    });
+}
+
+export function getLocalUserEmail(res): string {
+    return res.locals.user.emails[0].value;
+}

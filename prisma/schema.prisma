@@ -29,7 +29,7 @@ model Player {
   id Int @id @default(autoincrement())
   firstName String
   lastName String
-  email String?
+  email String @unique
   uscfProfile String?
   fideProfile String?
   chessComProfile String?

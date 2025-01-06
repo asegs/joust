@@ -5,6 +5,9 @@ html
     body
         h2="Joust"
         h3="A chess tournament host."
+        unless isAuthenticated
+            h3
+                a(href="/login") Login
         h4
             a(href="/create") Create tournament
         p="All tournaments:"

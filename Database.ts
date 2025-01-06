@@ -64,6 +64,25 @@ export async function getPlayerById(id: number) {
     });
 }
 
+export async function getPlayerByEmail(email: string) {
+    return prisma.player.findUnique({
+        where: {
+            email: email
+        },
+        include: INCLUDE_TOURNAMENTS
+    });
+}
+
+export async function createPlayerByEmail(email: string) {
+    return prisma.player.create({
+        data: {
+            email: email,
+            firstName: "",
+            lastName: ""
+        }
+    })
+}
+
 export async function createTournament(payload: any) {
     payload.startDate = new Date(payload.startDate);
     payload.endDate = new Date(payload.endDate);
@@ -73,6 +92,32 @@ export async function createTournament(payload: any) {
             data: payload
         }
     )
+}
+
+export async function updatePlayer(payload: any) {
+    // Can't send this, not a real field
+    delete payload.entries;
+    // Needs rating as a number
+    if (payload.neutralRating) {
+        if (typeof payload.neutralRating === "string") {
+            payload.neutralRating = parseInt(payload.neutralRating)
+        }
+    }
+    return prisma.player.update({
+        where: {
+            id: payload.id
+        },
+        data: payload
+    });
+}
+
+export async function registerPlayerForTournament(playerId: number, tournamentId: number) {
+    return prisma.entry.create({
+        data: {
+            tournamentId: tournamentId,
+            playerId: playerId
+        }
+    })
 }
 
 async function formatDateForTournament(tournament: Tournament): Promise<Tournament> {
