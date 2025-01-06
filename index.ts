@@ -1,4 +1,5 @@
 import express = require('express');
+import favicon = require('serve-favicon');
 import * as path from "path";
 import {
     createTournament,
@@ -6,11 +7,16 @@ import {
     getPlayerById,
     getTournamentById,
     getTournaments,
-    getTournamentsByName, registerPlayerForTournament, setAdminById, updatePlayer, withdrawPlayerFromTournament
+    getTournamentsByName,
+    registerPlayerForTournament,
+    setAdminById,
+    updatePlayer,
+    withdrawPlayerFromTournament
 } from "./Database";
-import favicon = require('serve-favicon');
-require("dotenv").config();
 import {configureMainWithAuth, getLocalUserEmail} from "./Auth"
+import {getRatingsForUser} from "./Rating";
+
+require("dotenv").config();
 
 const app = express()
 const port = process.env.PORT
@@ -50,6 +56,18 @@ app.get("/:tournamentId(\\d+)", async (req, res) => {
 app.get("/player/:playerId(\\d+)", async (req, res) => {
     const authedPlayer = res.locals.isAuthenticated ? await getPlayerByEmail(getLocalUserEmail(res)) : null;
     getPlayerById(parseInt(req.params.playerId)).then(result => res.render('player', {player: result, authedPlayer: authedPlayer}))
+})
+
+app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
+    const authedPlayer = res.locals.isAuthenticated ? await getPlayerByEmail(getLocalUserEmail(res)) : null;
+    if (!authedPlayer) {
+       res.sendStatus(403);
+       return;
+    }
+    const ratings = await getRatingsForUser(authedPlayer);
+    const average = array => array.reduce((a, b) => a + b) / array.length;
+    authedPlayer.neutralRating = average(Object.values(ratings));
+    updatePlayer(authedPlayer).then(p => res.redirect("/player/" + authedPlayer.id));
 })
 
 app.get("/create", (req, res) => {

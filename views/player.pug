@@ -28,6 +28,8 @@ html
                 input(type="number", name="neutralRating", placeholder="Rating", value=player.neutralRating)
                 br
                 input(type="submit" value="Update profile")
+            form(id="recalibrate-elo" action=`/player/${player.id}/rating` method="post")
+                input(type="submit" value="Recalibrate ELO")
 
         else
             h4=player.firstName + " " + player.lastName
