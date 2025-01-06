@@ -4,6 +4,9 @@ const prisma = new PrismaClient()
 
 const INCLUDE_PLAYERS = {
     entries: {
+            where: {
+                type: "entry"
+            },
             include: {
                 player: true
             }
@@ -12,6 +15,9 @@ const INCLUDE_PLAYERS = {
 
 const INCLUDE_TOURNAMENTS = {
     entries: {
+        where: {
+          type: "entry"
+        },
         include: {
             tournament: true
         }
@@ -20,6 +26,9 @@ const INCLUDE_TOURNAMENTS = {
 
 const INCLUDE_PLAYERS_GAMES = {
     entries: {
+        where: {
+            type: "entry"
+        },
         include: {
             player: true
         }
@@ -111,23 +120,41 @@ export async function updatePlayer(payload: any) {
     });
 }
 
+
+
 export async function registerPlayerForTournament(playerId: number, tournamentId: number) {
-    return prisma.entry.create({
-        data: {
+    return prisma.entry.upsert({
+        where: {
+            entryId: {
+                playerId: playerId,
+                tournamentId: tournamentId
+            }
+        },
+        create: {
             tournamentId: tournamentId,
-            playerId: playerId
+            playerId: playerId,
+            type: "entry"
+        },
+        update: {
+            type: "entry"
         }
     })
 }
 
 export async function withdrawPlayerFromTournament(playerId: number, tournamentId: number) {
-    // TID + PID should be unique
-    return prisma.entry.deleteMany({
-        where: {
-            playerId: playerId,
-            tournamentId: tournamentId
+    return prisma.entry.update(
+        {
+            where: {
+                entryId: {
+                    playerId: playerId,
+                    tournamentId: tournamentId
+                }
+            },
+            data: {
+                type: "withdrawn"
+            }
         }
-    })
+    );
 }
 
 async function formatDateForTournament(tournament: Tournament): Promise<Tournament> {

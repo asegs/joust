@@ -41,11 +41,12 @@ model Player {
 }
 
 model Entry {
-  id Int @id @default(autoincrement())
   tournament Tournament @relation(fields: [tournamentId], references: [id])
   tournamentId Int
   player Player @relation(fields: [playerId], references: [id])
   playerId Int
+  type String @default("entry")
+  @@id([tournamentId, playerId], name: "entryId")
 }
 
 model Game {
