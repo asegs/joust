@@ -103,6 +103,26 @@ export async function createTournament(payload: any) {
     )
 }
 
+export async function setAdminById(playerId: number, tournamentId: number, adminType: string) {
+    return prisma.admin.upsert({
+            where: {
+                adminId: {
+                    playerId: playerId,
+                    tournamentId: tournamentId
+                }
+            },
+            create: {
+                playerId: playerId,
+                tournamentId: tournamentId,
+                type: adminType
+            },
+            update: {
+                type: adminType
+            }
+        }
+    )
+}
+
 export async function updatePlayer(payload: any) {
     // Can't send this, not a real field
     delete payload.entries;

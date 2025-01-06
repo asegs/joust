@@ -22,6 +22,7 @@ model Tournament {
   maxPlayers Int
   description String
   entries Entry[]
+  admins Admin[]
   games Game[]
 }
 
@@ -38,6 +39,7 @@ model Player {
   entries Entry[]
   whiteGames Game[] @relation("WhiteGames")
   blackGames Game[] @relation("BlackGames")
+  adminedTournaments Admin[]
 }
 
 model Entry {
@@ -60,4 +62,13 @@ model Game {
   blackId Int
   result Int
   pgn String @db.LongText
+}
+
+model Admin {
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+  player Player @relation(fields: [playerId], references: [id])
+  playerId Int
+  type String @default("owner")
+  @@id([tournamentId, playerId], name: "adminId")
 }

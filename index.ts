@@ -6,7 +6,7 @@ import {
     getPlayerById,
     getTournamentById,
     getTournaments,
-    getTournamentsByName, registerPlayerForTournament, updatePlayer, withdrawPlayerFromTournament
+    getTournamentsByName, registerPlayerForTournament, setAdminById, updatePlayer, withdrawPlayerFromTournament
 } from "./Database";
 import favicon = require('serve-favicon');
 require("dotenv").config();
@@ -56,12 +56,17 @@ app.get("/create", (req, res) => {
     res.render('new_tournament')
 })
 
-app.post("/create", (req, res) => {
+app.post("/create", async (req, res) => {
+    const authedPlayer = res.locals.isAuthenticated ? await getPlayerByEmail(getLocalUserEmail(res)) : null;
     if (!res.locals.isAuthenticated) {
         res.sendStatus(401);
         return;
     }
-    createTournament(req.body).then(result => res.redirect("/" + result.id))
+    if (!authedPlayer) {
+        res.sendStatus(403);
+        return;
+    }
+    createTournament(req.body).then(result => setAdminById(authedPlayer.id, result.id, "owner")).then(result => res.redirect("/" + result.tournamentId))
 })
 
 app.post("/player/:playerId(\\d+)", async (req, res) => {
