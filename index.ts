@@ -6,7 +6,7 @@ import {
     getPlayerById,
     getTournamentById,
     getTournaments,
-    getTournamentsByName, registerPlayerForTournament, updatePlayer
+    getTournamentsByName, registerPlayerForTournament, updatePlayer, withdrawPlayerFromTournament
 } from "./Database";
 import favicon = require('serve-favicon');
 require("dotenv").config();
@@ -42,8 +42,9 @@ app.get("/", (req, res) => {
     getTournaments().then(result => res.render('main', {tournaments: result}));
 })
 
-app.get("/:tournamentId(\\d+)", (req, res) => {
-    getTournamentById(parseInt(req.params.tournamentId)).then(result => res.render('tournament', {tournament: result}))
+app.get("/:tournamentId(\\d+)", async (req, res) => {
+    const authedPlayer = res.locals.isAuthenticated ? await getPlayerByEmail(getLocalUserEmail(res)) : null;
+    getTournamentById(parseInt(req.params.tournamentId)).then(result => res.render('tournament', {tournament: result, authedPlayer: authedPlayer}))
 })
 
 app.get("/player/:playerId(\\d+)", async (req, res) => {
@@ -88,4 +89,18 @@ app.post("/register/:tournamentId(\\d+)", async (req, res) => {
         return;
     }
     registerPlayerForTournament(authedPlayer.id, tournamentId).then(p => res.redirect("/" + tournamentId));
+})
+
+app.post("/withdraw/:tournamentId(\\d+)", async (req, res) => {
+    const authedPlayer = res.locals.isAuthenticated ? await getPlayerByEmail(getLocalUserEmail(res)) : null;
+    const tournamentId = parseInt(req.params.tournamentId);
+    if (!res.locals.isAuthenticated) {
+        res.sendStatus(401);
+        return;
+    }
+    if (!authedPlayer) {
+        res.sendStatus(403);
+        return;
+    }
+    withdrawPlayerFromTournament(authedPlayer.id, tournamentId).then(p => res.redirect("/" + tournamentId));
 })

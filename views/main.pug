@@ -8,6 +8,9 @@ html
         unless isAuthenticated
             h3
                 a(href="/login") Login
+        else
+            h3
+                a(href="/logout") Logout
         h4
             a(href="/create") Create tournament
         p="All tournaments:"

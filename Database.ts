@@ -120,6 +120,16 @@ export async function registerPlayerForTournament(playerId: number, tournamentId
     })
 }
 
+export async function withdrawPlayerFromTournament(playerId: number, tournamentId: number) {
+    // TID + PID should be unique
+    return prisma.entry.deleteMany({
+        where: {
+            playerId: playerId,
+            tournamentId: tournamentId
+        }
+    })
+}
+
 async function formatDateForTournament(tournament: Tournament): Promise<Tournament> {
     return formatDate(tournament);
 }

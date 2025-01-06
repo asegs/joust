@@ -8,6 +8,9 @@ html
         unless isAuthenticated
             h3
                 a(href="/login") Login
+        else
+            h3
+                a(href="/logout") Logout
         if isAuthenticated && authedPlayer && authedPlayer.id===player.id
             form(id="update-player" action=`/player/${player.id}` method="post")
                 input(type="text", name="firstName", placeHolder="Magnus", value=player.firstName)
