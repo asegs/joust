@@ -4,6 +4,9 @@ import ChessWebAPI = require("chess-web-api");
 import { Player } from "@prisma/client";
 const chessComAsyncClient = new ChessWebAPI();
 
+import * as chessComToUscf from "./public/data/chesscom_uscf.json";
+import * as lichessToUscf from "./public/data/lichess_uscf.json";
+
 const lichessAsyncClient = new Equine(process.env.LICHESS_TOKEN);
 export async function getLichessUserRating(username: string): Promise<number> {
   // Maybe get other ratings
@@ -36,10 +39,10 @@ export async function getRatingsForUser(user: Player) {
   return Promise.all(ratings).then((table) => {
     const ratingMap = {};
     if (table[0]) {
-      ratingMap["chessCom"] = table[0];
+      ratingMap["chessCom"] = mapRatingToUscf(table[0], "chesscom", "rapid");
     }
     if (table[1]) {
-      ratingMap["lichess"] = table[1];
+      ratingMap["lichess"] = mapRatingToUscf(table[1], "lichess", "rapid");
     }
     if (table[2]) {
       ratingMap["uscf"] = table[2];
@@ -88,4 +91,28 @@ const emptyPromise = () => {
   return Promise.resolve(0);
 };
 
-// TODO: Get mappings from chess.com and lichess to USCF in here.
+function mapRatingToUscf(
+  rating: number,
+  platform: string,
+  control: string,
+): number {
+  const reference = platform === "lichess" ? lichessToUscf : chessComToUscf;
+  const categoryTable = reference[control];
+  for (let i = 0; i < categoryTable.length; i++) {
+    if (i === categoryTable.length - 1) {
+      // Provided rating higher than table max
+      return categoryTable[i][1];
+    }
+    const currentRating = categoryTable[i];
+    const nextRating = categoryTable[i + 1];
+    if (nextRating[0] >= rating) {
+      // Player is within this rating band
+      const sourceRange = nextRating[0] - currentRating[0];
+      // How much the player is rated above the bottom of the range
+      const playerRange = rating - currentRating[0];
+      const ratingFraction = playerRange / sourceRange;
+      const targetRange = nextRating[1] - currentRating[1];
+      return ratingFraction * targetRange + currentRating[1];
+    }
+  }
+}
