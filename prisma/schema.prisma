@@ -24,6 +24,9 @@ model Tournament {
   entries Entry[]
   admins Admin[]
   games Game[]
+  minRating Int?
+  maxRating Int?
+  requireLinkedAccounts Boolean @default(false)
 }
 
 model Player {
@@ -47,7 +50,7 @@ model Entry {
   tournamentId Int
   player Player @relation(fields: [playerId], references: [id])
   playerId Int
-  type String @default("entry")
+  type String @default("request")
   @@id([tournamentId, playerId], name: "entryId")
 }
 
