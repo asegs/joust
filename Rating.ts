@@ -18,9 +18,9 @@ export async function getChessComUserRating(username:string):Promise<number> {
 
 export async function getRatingsForUser(user: Player) {
     const ratings = [];
-    ratings.push(user.chessComProfile === null ? emptyPromise() : getChessComUserRating(user.chessComProfile));
-    ratings.push(user.lichessProfile === null ? emptyPromise() : getLichessUserRating(user.lichessProfile));
-    ratings.push(user.uscfProfile === null ? emptyPromise() : getUscfRatingForId(user.uscfProfile));
+    ratings.push(!user.chessComProfile ? emptyPromise() : getChessComUserRating(user.chessComProfile));
+    ratings.push(!user.lichessProfile ? emptyPromise() : getLichessUserRating(user.lichessProfile));
+    ratings.push(!user.uscfProfile ? emptyPromise() : getUscfRatingForId(user.uscfProfile));
     return Promise.all(ratings).then(table => {
         const ratingMap = {};
         if (table[0]) {
@@ -66,7 +66,7 @@ export async function getUscfRatingForId(id:string) {
 }
 
 const emptyPromise = () => {
-    return new Promise(() => null);
+    return Promise.resolve(0);
 }
 
 // TODO: Get mappings from chess.com and lichess to USCF in here.
