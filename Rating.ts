@@ -37,7 +37,7 @@ export async function getRatingsForUser(user: Player) {
 }
 
 function getQueryString(id: string): string {
-    return "calls=%7B%22run%22%3A%5B%22SearchDisplay%22%2C%22run%22%2C%7B%22return%22%3A%22page%3A1%22%2C%22savedSearch%22%3A%22Member_Player_Search%22%2C%22display%22%3A%22Table%22%2C%22sort%22%3A%5B%5B%22sort_name%22%2C%22ASC%22%5D%5D%2C%22limit%22%3A50%2C%22seed%22%3A1736215282721%2C%22filters%22%3A%7B%22Player_Details.Rating%22%3A%7B%7D%2C%22Player_Details.Quick_Rating%22%3A%7B%7D%2C%22Player_Details.Blitz_Rating%22%3A%7B%7D%2C%22Player_Details.Online_Regular_Rating%22%3A%7B%7D%2C%22Player_Details.Online_Blitz_Rating%22%3A%7B%7D%2C%22Player_Details.Online_Quick_Rating%22%3A%7B%7D%2C%22Player_Details.Correspondence_Rating%22%3A%7B%7D%2C%22external_identifier%22%3A%22" + id + "%22%7D%2C%22afform%22%3A%22afsearchPlayerSearch1%22%7D%5D%7D";
+    return "calls=%7B%22run%22%3A%5B%22SearchDisplay%22%2C%22run%22%2C%7B%22return%22%3A%22page%3A1%22%2C%22savedSearch%22%3A%22Member_Player_Search%22%2C%22display%22%3A%22Table%22%2C%22sort%22%3A%5B%5B%22sort_name%22%2C%22ASC%22%5D%5D%2C%22limit%22%3A50%2C%22seed%22%3A" + Date.now() + "%2C%22filters%22%3A%7B%22Player_Details.Rating%22%3A%7B%7D%2C%22Player_Details.Quick_Rating%22%3A%7B%7D%2C%22Player_Details.Blitz_Rating%22%3A%7B%7D%2C%22Player_Details.Online_Regular_Rating%22%3A%7B%7D%2C%22Player_Details.Online_Blitz_Rating%22%3A%7B%7D%2C%22Player_Details.Online_Quick_Rating%22%3A%7B%7D%2C%22Player_Details.Correspondence_Rating%22%3A%7B%7D%2C%22external_identifier%22%3A%22" + id + "%22%7D%2C%22afform%22%3A%22afsearchPlayerSearch1%22%7D%5D%7D";
 
 }
 
@@ -68,5 +68,7 @@ export async function getUscfRatingForId(id:string) {
 const emptyPromise = () => {
     return new Promise(() => null);
 }
+
+// TODO: Get mappings from chess.com and lichess to USCF in here.
 
 
