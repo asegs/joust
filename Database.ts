@@ -126,11 +126,22 @@ export async function setAdminById(playerId: number, tournamentId: number, admin
 export async function updatePlayer(payload: any) {
     // Can't send this, not a real field
     delete payload.entries;
-    // Needs rating as a number
+    let validNeutralRatingSetting = false;
     if (payload.neutralRating) {
-        if (typeof payload.neutralRating === "string") {
-            payload.neutralRating = parseInt(payload.neutralRating)
+        // TODO: this code SUCKS!
+        if (typeof payload.neutralRating === "number") {
+            validNeutralRatingSetting = true;
         }
+        if (typeof payload.neutralRating === "string") {
+            const neutralRating = parseInt(payload.neutralRating);
+            if (!Number.isNaN(neutralRating)) {
+                payload.neutralRating = parseInt(payload.neutralRating);
+                validNeutralRatingSetting = true;
+            }
+        }
+    }
+    if (!validNeutralRatingSetting) {
+        delete payload.neutralRating;
     }
     return prisma.player.update({
         where: {
