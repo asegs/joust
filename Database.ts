@@ -34,6 +34,7 @@ const INCLUDE_PLAYERS_GAMES = {
     },
   },
   games: {},
+  admins: {},
 };
 
 export async function getTournaments() {

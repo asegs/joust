@@ -11,13 +11,15 @@ html
         else
             h3
                 a(href="/logout") Logout
+
         h2=tournament.name
         h3=tournament.location
         h4=tournament.description
         p="Starts: " + tournament.startDate
         p="Ends: " + tournament.endDate
+        - const playerIsAdmin = isAuthenticated && tournament.admins.map(a => a.playerId).includes(authedPlayer.id)
         if isAuthenticated
-            - const playerInTournament = tournament.entries.map(e => e.playerId).includes(authedPlayer.id);
+            - const playerInTournament = tournament.entries.map(e => e.playerId).includes(authedPlayer.id)
             unless playerInTournament
                 form(id="register" action=`/register/${tournament.id}` method="post")
                     input(type="submit" value="Register")
