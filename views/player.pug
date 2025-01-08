@@ -1,3 +1,5 @@
+include ./mixins/entry.pug
+
 html
     link(rel="stylesheet", type='text/css', href='/main.css')
     head
@@ -13,20 +15,13 @@ html
                 a(href="/logout") Logout
         if isAuthenticated && authedPlayer && authedPlayer.id===player.id
             form(id="update-player" action=`/player/${player.id}` method="post")
-                input(type="text", name="firstName", placeHolder="Magnus", value=player.firstName)
-                br
-                input(type="text", name="lastName", placeholder="Carlsen", value=player.lastName)
-                br
-                input(type="text", name="uscfProfile", placeHolder="USCF profile link", value=player.uscfProfile)
-                br
-                input(type="text", name="fideProfile", placeholder="FIDE profile link", value=player.fideProfile)
-                br
-                input(type="text", name="chessComProfile", placeholder="Chess.com profile link", value=player.chessComProfile)
-                br
-                input(type="text", name="lichessProfile", placeholder="Lichess profile link", value=player.lichessProfile)
-                br
-                input(type="number", name="neutralRating", placeholder="Rating", value=player.neutralRating)
-                br
+                +entry("firstName", "First name", "Magnus", "text", false, player.firstName)
+                +entry("lastName", "Last name", "Carlsen", "text", false, player.lastName)
+                +entry("uscfProfile", "USCF profile ID", "12345", "text", false, player.uscfProfile)
+                +entry("fideProfile", "FIDE profile ID", "54321", "text", false, player.fideProfile)
+                +entry("chessComProfile", "Chess.com username", "magnuscarlsen", "text", false, player.chessComProfile)
+                +entry("lichessProfile", "Lichess username", "DrNykterstein", "text", false, player.lichessProfile)
+                +entry("neutralRating", "Neutral rating", "1500", "number", false, player.neutralRating)
                 input(type="submit" value="Update profile")
             form(id="recalibrate-elo" action=`/player/${player.id}/rating` method="post")
                 input(type="submit" value="Recalibrate ELO")

@@ -100,6 +100,12 @@ export async function createTournament(payload: any) {
   payload.startDate = new Date(payload.startDate);
   payload.endDate = new Date(payload.endDate);
   payload.maxPlayers = parseInt(payload.maxPlayers);
+  const maxRating = handleFormNumber(payload.maxRating);
+  if (maxRating) {
+    payload.maxRating = maxRating;
+  } else {
+    delete payload.maxRating;
+  }
   return prisma.tournament.create({
     data: payload,
   });
@@ -207,4 +213,16 @@ function formatDate(tournament: Tournament) {
   );
   tournament.endDate = tournament.endDate.toLocaleTimeString("en-US", options);
   return tournament;
+}
+
+export function handleFormNumber(obj): number | null {
+  if (obj) {
+    const parsed = parseInt(obj);
+    if (Number.isNaN(parsed)) {
+      return null;
+    }
+    return parsed;
+  }
+
+  return null;
 }

@@ -11,8 +11,9 @@ html
         else
             h3
                 a(href="/logout") Logout
-        h4
-            a(href="/create") Create tournament
+            h4
+                a(href="/create") Create tournament
+
         p="All tournaments:"
         each val in tournaments
             -const formattedTournament= val.name + " (" + val.entries.length + "/" + val.maxPlayers + ") " + val.startDate
