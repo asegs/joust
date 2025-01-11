@@ -1,0 +1,11 @@
+mixin navbar(isAuthenticated, authedPlayer)
+    h2="Joust"
+    h3="A chess tournament host."
+    unless isAuthenticated
+        h3
+            a(href="/login") Login
+    else
+        h3
+            a(href=`/player/${authedPlayer.id}`) My Profile
+            br
+            a(href="/logout") Logout

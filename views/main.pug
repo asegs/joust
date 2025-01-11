@@ -1,16 +1,11 @@
+include ./mixins/navbar
 html
     link(rel="stylesheet", type='text/css', href='/main.css')
     head
         title="Joust!"
     body
-        h2="Joust"
-        h3="A chess tournament host."
-        unless isAuthenticated
-            h3
-                a(href="/login") Login
-        else
-            h3
-                a(href="/logout") Logout
+        +navbar(isAuthenticated, authedPlayer)
+        if isAuthenticated
             h4
                 a(href="/create") Create tournament
 

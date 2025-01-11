@@ -1,16 +1,10 @@
+include ./mixins/navbar
 html
     link(rel="stylesheet", type='text/css', href='/main.css')
     head
         title=tournament.name
     body
-        h2
-            a(href="/") Joust
-        unless isAuthenticated
-            h3
-                a(href="/login") Login
-        else
-            h3
-                a(href="/logout") Logout
+        +navbar(isAuthenticated, authedPlayer)
 
         h2=tournament.name
         h3=tournament.location

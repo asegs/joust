@@ -42,9 +42,12 @@ app.get("/tournaments", (req, res) => {
   getTournaments().then((result) => res.send(result));
 });
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
+  const authedPlayer = res.locals.isAuthenticated
+    ? await getPlayerByEmail(getLocalUserEmail(res))
+    : null;
   getTournaments().then((result) =>
-    res.render("main", { tournaments: result }),
+    res.render("main", { tournaments: result, authedPlayer: authedPlayer }),
   );
 });
 
