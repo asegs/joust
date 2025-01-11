@@ -31,7 +31,7 @@ html
             p="Neutral Rating: " + player.neutralRating
             // USCF conditional
             if player.uscfProfile
-                a(href=player.uscfProfile target="_blank") USCF Profile
+                a(href=`https://www.uschess.org/msa/MbrDtlMain.php?${player.uscfProfile}` target="_blank") USCF Profile
                 br
                 br
             else
@@ -47,7 +47,7 @@ html
 
             // Lichess profile
             if player.lichessProfile
-                a(href=player.lichessProfile target="_blank") Lichess Profile
+                a(href=`https://lichess.org/@/${player.lichessProfile}` target="_blank") Lichess Profile
                 br
                 br
             else
@@ -56,7 +56,7 @@ html
 
             // Chess.com profile
             if player.chessComProfile
-                a(href=player.chessComProfile target="_blank") Chess.com Profile
+                a(href=`https://chess.com/member/${player.chessComProfile}` target="_blank") Chess.com Profile
                 br
             else
                 p="No linked Chess.com profile"

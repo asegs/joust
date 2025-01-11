@@ -15,6 +15,7 @@ export async function getLichessUserRating(username: string): Promise<number> {
     .then((userInfo) => userInfo.perfs.rapid.rating);
 }
 
+//Blocked and throws from DigitalOcean droplet
 export async function getChessComUserRating(username: string): Promise<number> {
   return chessComAsyncClient
     .getPlayerStats(username)
