@@ -81,6 +81,9 @@ app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
     return;
   }
   const ratings = await getRatingsForUser(authedPlayer);
+  if (Object.values(ratings).length === 0) {
+    res.redirect("/player/" + authedPlayer.id);
+  }
   const average = (array) => array.reduce((a, b) => a + b) / array.length;
   authedPlayer.neutralRating = average(Object.values(ratings));
   updatePlayer(authedPlayer).then((p) =>
