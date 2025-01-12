@@ -10,11 +10,14 @@ import expressSession = require("express-session");
 
 require("dotenv").config();
 
+const onProduction = process.env.ENVIRONMENT === "production";
+
 export const session = {
   secret: process.env.SESSION_SECRET,
-  cookie: {},
+  cookie: { secure: onProduction },
   resave: false,
   saveUninitialized: false,
+  proxy: onProduction,
 };
 
 passport.serializeUser((user, done) => {
@@ -109,6 +112,9 @@ export function configureMainWithAuth(router: Express) {
     res.locals.user = req.user;
     next();
   });
+  if (onProduction) {
+    router.set("trust proxy", 1);
+  }
 }
 
 export function getLocalUserEmail(res): string {
