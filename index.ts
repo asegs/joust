@@ -80,15 +80,19 @@ app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
     res.sendStatus(403);
     return;
   }
-  const ratings = await getRatingsForUser(authedPlayer);
-  if (Object.values(ratings).length === 0) {
+  try {
+    const ratings = await getRatingsForUser(authedPlayer);
+    if (Object.values(ratings).length === 0) {
+      res.redirect("/player/" + authedPlayer.id);
+    }
+    const average = (array) => array.reduce((a, b) => a + b) / array.length;
+    authedPlayer.neutralRating = average(Object.values(ratings));
+    updatePlayer(authedPlayer).then((p) =>
+      res.redirect("/player/" + authedPlayer.id),
+    );
+  } catch (e) {
     res.redirect("/player/" + authedPlayer.id);
   }
-  const average = (array) => array.reduce((a, b) => a + b) / array.length;
-  authedPlayer.neutralRating = average(Object.values(ratings));
-  updatePlayer(authedPlayer).then((p) =>
-    res.redirect("/player/" + authedPlayer.id),
-  );
 });
 
 app.get("/create", (req, res) => {
@@ -169,4 +173,9 @@ app.post("/withdraw/:tournamentId(\\d+)", async (req, res) => {
   withdrawPlayerFromTournament(authedPlayer.id, tournamentId).then((p) =>
     res.redirect("/" + tournamentId),
   );
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("That didn't work...");
 });
