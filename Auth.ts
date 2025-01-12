@@ -54,17 +54,17 @@ authRouter.get(
 
 authRouter.get("/callback", (req, res, next) => {
   passport.authenticate("auth0", (err, user, info) => {
-    getPlayerByEmail(user.emails[0].value).then((p) => {
-      if (!p) {
-        createPlayerByEmail(user.emails[0].value);
-      }
-    });
     if (err) {
       return next(err);
     }
     if (!user) {
       return res.redirect("/login");
     }
+    getPlayerByEmail(user.emails[0].value).then((p) => {
+      if (!p) {
+        createPlayerByEmail(user.emails[0].value);
+      }
+    });
     req.logIn(user, (err) => {
       if (err) {
         return next(err);
