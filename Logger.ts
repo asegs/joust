@@ -24,10 +24,6 @@ export const Logger = Pino.pino({
           destination: `${__dirname}/logs/joust.log`,
         },
       },
-      {
-        target: "pino-pretty",
-        options: { destination: 1 },
-      },
     ],
   },
 });
