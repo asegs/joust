@@ -1,5 +1,6 @@
 mixin navbar(isAuthenticated, authedPlayer)
-    h2="Joust"
+    h2
+        a(href="/") Joust
     h3="A chess tournament host."
     unless isAuthenticated
         h3

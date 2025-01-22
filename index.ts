@@ -1,6 +1,7 @@
 import express = require("express");
 import favicon = require("serve-favicon");
 import * as path from "path";
+import { Logger } from "./Logger";
 import {
   createTournament,
   getPlayerByEmail,
@@ -27,18 +28,15 @@ app.use(express.static("public/css"));
 configureMainWithAuth(app);
 
 app.listen(port, () => {
-  console.log(`Joust running on ${port}`);
+  Logger.info("Started Joust on port " + process.env.PORT);
 });
-
-app.get("/index.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "/view/index.js"));
-});
-
 app.get("/tournaments/:search", (req, res) => {
+  Logger.info("Searched tournaments with " + req.params.search);
   getTournamentsByName(req.params.search).then((result) => res.send(result));
 });
 
 app.get("/tournaments", (req, res) => {
+  Logger.info("Got all tournaments");
   getTournaments().then((result) => res.send(result));
 });
 
@@ -46,6 +44,7 @@ app.get("/", async (req, res) => {
   const authedPlayer = res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
+  Logger.info("Loaded main view");
   getTournaments().then((result) =>
     res.render("main", { tournaments: result, authedPlayer: authedPlayer }),
   );
@@ -55,6 +54,8 @@ app.get("/:tournamentId(\\d+)", async (req, res) => {
   const authedPlayer = res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
+
+  Logger.info("Loaded page for tournament " + req.params.tournamentId);
   getTournamentById(parseInt(req.params.tournamentId)).then((result) =>
     res.render("tournament", {
       tournament: result,
@@ -67,6 +68,7 @@ app.get("/player/:playerId(\\d+)", async (req, res) => {
   const authedPlayer = res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
+  Logger.info("Loaded page for player " + req.params.playerId);
   getPlayerById(parseInt(req.params.playerId)).then((result) =>
     res.render("player", { player: result, authedPlayer: authedPlayer }),
   );
@@ -76,6 +78,9 @@ app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
   const authedPlayer = res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
+  Logger.info(
+    "Requested a rating recalculation for player " + req.params.playerId,
+  );
   if (!authedPlayer) {
     res.sendStatus(403);
     return;
@@ -97,10 +102,13 @@ app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
 });
 
 app.get("/create", (req, res) => {
+  Logger.info("Loaded create new tournament page");
   res.render("new_tournament");
 });
 
 app.post("/create", async (req, res) => {
+  Logger.info("Attempted to create a new tournament");
+  Logger.info(req.body);
   const authedPlayer = res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
@@ -118,6 +126,8 @@ app.post("/create", async (req, res) => {
 });
 
 app.post("/player/:playerId(\\d+)", async (req, res) => {
+  Logger.info("Attempted to update player " + req.params.playerId);
+  Logger.info(req.body);
   const authedPlayer = res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
@@ -141,6 +151,7 @@ app.post("/player/:playerId(\\d+)", async (req, res) => {
 });
 
 app.post("/register/:tournamentId(\\d+)", async (req, res) => {
+  Logger.info("Attempted to register in tournament " + req.params.tournamentId);
   const authedPlayer = res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
@@ -159,6 +170,9 @@ app.post("/register/:tournamentId(\\d+)", async (req, res) => {
 });
 
 app.post("/withdraw/:tournamentId(\\d+)", async (req, res) => {
+  Logger.info(
+    "Attempted to withdraw from tournament " + req.params.tournamentId,
+  );
   const authedPlayer = res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
@@ -177,6 +191,6 @@ app.post("/withdraw/:tournamentId(\\d+)", async (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  Logger.error(err.stack);
   res.status(500).send("That didn't work...");
 });

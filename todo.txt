@@ -1,0 +1,3 @@
+- Logging on errors
+- Top level try/catch
+- Move logic into manager rather than resource

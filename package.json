@@ -30,6 +30,9 @@
     "express-session": "^1.18.1",
     "passport": "^0.7.0",
     "passport-auth0": "^1.4.4",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "pino-pretty": "^13.0.0",
     "pug": "^3.0.3",
     "serve-favicon": "^2.5.0",
     "tournament-organizer": "^3.4.1"

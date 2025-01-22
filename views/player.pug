@@ -1,18 +1,12 @@
 include ./mixins/entry.pug
+include ./mixins/navbar.pug
 
 html
     link(rel="stylesheet", type='text/css', href='/main.css')
     head
         title="Joust!"
     body
-        h2
-            a(href="/") Joust
-        unless isAuthenticated
-            h3
-                a(href="/login") Login
-        else
-            h3
-                a(href="/logout") Logout
+        +navbar(isAuthenticated, authedPlayer)
         if isAuthenticated && authedPlayer && authedPlayer.id===player.id
             form(id="update-player" action=`/player/${player.id}` method="post")
                 +entry("firstName", "First name", "Magnus", "text", false, player.firstName)

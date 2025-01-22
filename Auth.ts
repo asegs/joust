@@ -1,6 +1,7 @@
 import * as express from "express";
 import { Express } from "express";
 import * as passport from "passport";
+import { Logger } from "./Logger";
 import { createPlayerByEmail, getPlayerByEmail } from "./Database";
 
 export const authRouter = express.Router();
@@ -48,12 +49,14 @@ authRouter.get(
     scope: "openid email profile",
   }),
   (req, res) => {
+    Logger.info("User attempted to login");
     res.redirect("/");
   },
 );
 
 authRouter.get("/callback", (req, res, next) => {
   passport.authenticate("auth0", (err, user, info) => {
+    Logger.info("User successfully logged in");
     if (err) {
       return next(err);
     }
@@ -62,6 +65,7 @@ authRouter.get("/callback", (req, res, next) => {
     }
     getPlayerByEmail(user.emails[0].value).then((p) => {
       if (!p) {
+        Logger.info("Created a new user with email " + user.emails[0].value);
         createPlayerByEmail(user.emails[0].value);
       }
     });
@@ -77,6 +81,7 @@ authRouter.get("/callback", (req, res, next) => {
 });
 
 authRouter.get("/logout", (req, res, next) => {
+  Logger.info("User logged out");
   req.logOut(function (err) {
     if (err) {
       return next(err);
