@@ -19,9 +19,13 @@ export const Logger = Pino.pino({
   transport: {
     targets: [
       {
-        target: "pino/file",
+        target: "pino-pretty",
         options: {
           destination: `${__dirname}/logs/joust.log`,
+          colorize: false,
+          translateTime: "UTC:yyyy-mm-dd HH:MM:ss.l o",
+          ignore: "pid",
+          levelFirst: true,
         },
       },
     ],

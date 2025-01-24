@@ -96,7 +96,7 @@ app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
     await updatePlayer(authedPlayer);
     res.redirect("/player/" + authedPlayer.id);
   } catch (e) {
-    console.log(e);
+    Logger.error(e);
     res.status(500).send("Failed to recalculate ratings");
   }
 });
