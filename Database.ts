@@ -1,4 +1,5 @@
 import { PrismaClient, Tournament } from "@prisma/client";
+import { getPairingsForTournament } from "./Organize";
 
 const prisma = new PrismaClient();
 
@@ -189,6 +190,7 @@ export async function withdrawPlayerFromTournament(
 async function formatDateForTournament(
   tournament: Tournament,
 ): Promise<Tournament> {
+  getPairingsForTournament(tournament);
   return formatDate(tournament);
 }
 
