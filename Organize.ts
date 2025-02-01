@@ -1,3 +1,4 @@
-import TournamentOrganizer from 'tournament-organizer';
+import { Tournament } from "tournament-organizer/dist/components";
 
-const organizer = new TournamentOrganizer();
+const t = new Tournament("test-tournament", "Test tournament");
+console.log(t);
