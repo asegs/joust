@@ -2,3 +2,8 @@ mixin entry(id, title, placeholder='',type='text',required=true, value='')
     label(for=id, class=required ? "required" : "") #{title}:
     input(type=type, name=id, id=id, placeholder=placeholder, value=value, required=required)
     br
+
+mixin text_entry(id, title, placeholder='', required=true, value='')
+    label(for=id, class=required ? "required" : "") #{title}:
+    textarea(name=id, value=value, required=required)
+    br

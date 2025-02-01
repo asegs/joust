@@ -7,13 +7,9 @@ html(lang='en')
             a(href='/') Joust
 
         h3="Create tournament"
-
-        // Let's make this not a form, so we can do textareas or a richtext description
-        // Maybe a button with a passed function to pull from all value fields?
-
         form(id="create-tournament" action="/create" method="post")
             +entry("name", "Name", "My Local Tournament")
-            +entry("description", "Description", "Give some details...")
+            +text_entry("description", "Description", "Give some details...")
             +entry("location", "Location", "1600 Pennsylvania Ave")
             +entry("startDate", "Start date", "", "datetime-local")
             +entry("endDate", "End date", "", "datetime-local")
