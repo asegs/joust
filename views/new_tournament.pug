@@ -14,7 +14,12 @@ html(lang='en')
             +entry("startDate", "Start date", "", "datetime-local")
             +entry("endDate", "End date", "", "datetime-local")
             +entry("maxPlayers", "Max players", "32", "number")
+            +entry("rounds", "Rounds", "5", "number", true)
             +entry("maxRating", "Max rating", "1500", "number", false)
+            +entry("requireLinkedAccounts", "Require linked accounts", false, "checkbox", false)
+            +select_entry("pairingSystem", "Pairing system", pairingOptions, true, "swiss")
+            +select_entry("tiebreakSystem", "Tiebreak system", tiebreakOptions, true, "median buchholz")
+            +entry("defaultRating", "Default unrated rating", "800", "number", false)
             input(type="submit" value="Create tournament")
 
 

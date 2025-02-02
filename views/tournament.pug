@@ -11,7 +11,12 @@ html
         h4=tournament.description
         p="Starts: " + tournament.startDate
         p="Ends: " + tournament.endDate
+        p="Pairing system: " + tournament.pairingSystem
+        p="Tiebreak system: " + tournament.tiebreakSystem
         - const playerIsAdmin = isAuthenticated && tournament.admins.map(a => a.playerId).includes(authedPlayer.id)
+        if playerIsAdmin
+            form(id="delete" action=`${tournament.id}/delete` method="post")
+                input(type="submit" value="Delete tournament")
         if isAuthenticated
             - const playerInTournament = tournament.entries.map(e => e.playerId).includes(authedPlayer.id)
             unless playerInTournament

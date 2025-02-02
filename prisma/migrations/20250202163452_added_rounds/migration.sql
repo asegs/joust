@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Tournament` ADD COLUMN `rounds` INTEGER NOT NULL DEFAULT 5;

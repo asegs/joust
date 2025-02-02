@@ -7,3 +7,11 @@ mixin text_entry(id, title, placeholder='', required=true, value='')
     label(for=id, class=required ? "required" : "") #{title}:
     textarea(name=id, value=value, required=required)
     br
+
+mixin select_entry(id, title, options=[], required=true, value='')
+    label(for=id, class=required ? "required" : "") #{title}
+    select(name=id)
+        each select_option in options
+            option(value=select_option, selected=select_option === value) #{select_option}
+    br
+

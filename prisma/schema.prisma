@@ -27,6 +27,10 @@ model Tournament {
   minRating Int?
   maxRating Int?
   requireLinkedAccounts Boolean @default(false)
+  pairingSystem String @default("swiss")
+  tiebreakSystem String @default("median buchholz")
+  defaultRating Int @default(800)
+  rounds Int @default(5)
 }
 
 model Player {
@@ -46,9 +50,9 @@ model Player {
 }
 
 model Entry {
-  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId Int
-  player Player @relation(fields: [playerId], references: [id])
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId Int
   type String @default("request")
   @@id([tournamentId, playerId], name: "entryId")
@@ -56,7 +60,7 @@ model Entry {
 
 model Game {
   id Int @id @default(autoincrement())
-  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId Int
   round Int
   white Player @relation("WhiteGames", fields: [whiteId], references: [id])
@@ -68,7 +72,7 @@ model Game {
 }
 
 model Admin {
-  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId Int
   player Player @relation(fields: [playerId], references: [id])
   playerId Int

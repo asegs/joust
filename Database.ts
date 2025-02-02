@@ -1,5 +1,5 @@
 import { PrismaClient, Tournament } from "@prisma/client";
-import { getPairingsForTournament } from "./Organize";
+import {} from "./Organize";
 
 const prisma = new PrismaClient();
 
@@ -102,12 +102,10 @@ export async function createTournament(payload: any) {
   payload.startDate = new Date(payload.startDate);
   payload.endDate = new Date(payload.endDate);
   payload.maxPlayers = parseInt(payload.maxPlayers);
-  const maxRating = handleFormNumber(payload.maxRating);
-  if (maxRating) {
-    payload.maxRating = maxRating;
-  } else {
-    delete payload.maxRating;
-  }
+  handleFormNumber(payload, "maxRating");
+  handleFormNumber(payload, "defaultRating");
+  handleFormNumber(payload, "rounds");
+  payload.requireLinkedAccounts = "requireLinkedAccounts" in payload;
   return prisma.tournament.create({
     data: payload,
   });
@@ -187,10 +185,20 @@ export async function withdrawPlayerFromTournament(
   });
 }
 
+export async function deleteTournament(tournamentId: number) {
+  return prisma.tournament.delete({ where: { id: tournamentId } });
+}
+
+export async function pairTournamentRound(
+  tournamentId: number,
+  dryRun: boolean,
+) {
+  const tournament = await getTournamentById(tournamentId);
+}
+
 async function formatDateForTournament(
   tournament: Tournament,
 ): Promise<Tournament> {
-  getPairingsForTournament(tournament);
   return formatDate(tournament);
 }
 
@@ -218,14 +226,16 @@ function formatDate(tournament: Tournament) {
   return tournament;
 }
 
-export function handleFormNumber(obj): number | null {
-  if (obj) {
-    const parsed = parseInt(obj);
+export function handleFormNumber(payload: object, key: string): void {
+  const entry = payload[key];
+  if (entry) {
+    const parsed = parseInt(entry);
     if (Number.isNaN(parsed)) {
-      return null;
+      delete payload[key];
     }
-    return parsed;
+    payload[key] = parsed;
   }
 
-  return null;
+  //Redundant yes.
+  delete payload[key];
 }

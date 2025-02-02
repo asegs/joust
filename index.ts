@@ -4,6 +4,7 @@ import * as path from "path";
 import { Logger } from "./Logger";
 import {
   createTournament,
+  deleteTournament,
   getPlayerByEmail,
   getPlayerById,
   getTournamentById,
@@ -16,6 +17,8 @@ import {
 } from "./Database";
 import { configureMainWithAuth, getLocalUserEmail } from "./Auth";
 import { getRatingsForUser } from "./Rating";
+import { PAIRING_SYSTEMS, TIEBREAK_SYSTEMS } from "./Organize";
+import { Prisma, Player } from "@prisma/client";
 
 require("dotenv").config();
 
@@ -41,9 +44,7 @@ app.get("/tournaments", (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-  const authedPlayer = res.locals.isAuthenticated
-    ? await getPlayerByEmail(getLocalUserEmail(res))
-    : null;
+  const authedPlayer = await getAuthedPlayer(req, res);
   Logger.info("Loaded main view");
   getTournaments().then((result) =>
     res.render("main", { tournaments: result, authedPlayer: authedPlayer }),
@@ -51,9 +52,7 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/:tournamentId(\\d+)", async (req, res) => {
-  const authedPlayer = res.locals.isAuthenticated
-    ? await getPlayerByEmail(getLocalUserEmail(res))
-    : null;
+  const authedPlayer = await getAuthedPlayer(req, res);
 
   Logger.info("Loaded page for tournament " + req.params.tournamentId);
   getTournamentById(parseInt(req.params.tournamentId)).then((result) =>
@@ -65,9 +64,7 @@ app.get("/:tournamentId(\\d+)", async (req, res) => {
 });
 
 app.get("/player/:playerId(\\d+)", async (req, res) => {
-  const authedPlayer = res.locals.isAuthenticated
-    ? await getPlayerByEmail(getLocalUserEmail(res))
-    : null;
+  const authedPlayer = await getAuthedPlayer(req, res);
   Logger.info("Loaded page for player " + req.params.playerId);
   getPlayerById(parseInt(req.params.playerId)).then((result) =>
     res.render("player", { player: result, authedPlayer: authedPlayer }),
@@ -75,16 +72,10 @@ app.get("/player/:playerId(\\d+)", async (req, res) => {
 });
 
 app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
-  const authedPlayer = res.locals.isAuthenticated
-    ? await getPlayerByEmail(getLocalUserEmail(res))
-    : null;
+  const authedPlayer = await basicAuth(req, res);
   Logger.info(
     "Requested a rating recalculation for player " + req.params.playerId,
   );
-  if (!authedPlayer) {
-    res.sendStatus(403);
-    return;
-  }
   try {
     const ratings = await getRatingsForUser(authedPlayer);
     if (Object.values(ratings).length === 0) {
@@ -103,23 +94,16 @@ app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
 
 app.get("/create", (req, res) => {
   Logger.info("Loaded create new tournament page");
-  res.render("new_tournament");
+  res.render("new_tournament", {
+    pairingOptions: PAIRING_SYSTEMS,
+    tiebreakOptions: TIEBREAK_SYSTEMS,
+  });
 });
 
 app.post("/create", async (req, res) => {
   Logger.info("Attempted to create a new tournament");
   Logger.info(req.body);
-  const authedPlayer = res.locals.isAuthenticated
-    ? await getPlayerByEmail(getLocalUserEmail(res))
-    : null;
-  if (!res.locals.isAuthenticated) {
-    res.sendStatus(401);
-    return;
-  }
-  if (!authedPlayer) {
-    res.sendStatus(403);
-    return;
-  }
+  const authedPlayer = await basicAuth(req, res);
   createTournament(req.body)
     .then((result) => setAdminById(authedPlayer.id, result.id, "owner"))
     .then((result) => res.redirect("/" + result.tournamentId));
@@ -128,18 +112,7 @@ app.post("/create", async (req, res) => {
 app.post("/player/:playerId(\\d+)", async (req, res) => {
   Logger.info("Attempted to update player " + req.params.playerId);
   Logger.info(req.body);
-  const authedPlayer = res.locals.isAuthenticated
-    ? await getPlayerByEmail(getLocalUserEmail(res))
-    : null;
-  if (!res.locals.isAuthenticated) {
-    res.sendStatus(401);
-    return;
-  }
-
-  if (!authedPlayer || !(authedPlayer.id === parseInt(req.params.playerId))) {
-    res.sendStatus(403);
-    return;
-  }
+  const authedPlayer = await basicAuth(req, res);
   if (req.body.neutralRating) {
     req.body.neutralRating = parseInt(req.body.neutralRating);
   } else {
@@ -152,18 +125,8 @@ app.post("/player/:playerId(\\d+)", async (req, res) => {
 
 app.post("/register/:tournamentId(\\d+)", async (req, res) => {
   Logger.info("Attempted to register in tournament " + req.params.tournamentId);
-  const authedPlayer = res.locals.isAuthenticated
-    ? await getPlayerByEmail(getLocalUserEmail(res))
-    : null;
+  const authedPlayer = await basicAuth(req, res);
   const tournamentId = parseInt(req.params.tournamentId);
-  if (!res.locals.isAuthenticated) {
-    res.sendStatus(401);
-    return;
-  }
-  if (!authedPlayer) {
-    res.sendStatus(403);
-    return;
-  }
   registerPlayerForTournament(authedPlayer.id, tournamentId).then((p) =>
     res.redirect("/" + tournamentId),
   );
@@ -173,10 +136,44 @@ app.post("/withdraw/:tournamentId(\\d+)", async (req, res) => {
   Logger.info(
     "Attempted to withdraw from tournament " + req.params.tournamentId,
   );
-  const authedPlayer = res.locals.isAuthenticated
+  const authedPlayer = await basicAuth(req, res);
+  const tournamentId = parseInt(req.params.tournamentId);
+  withdrawPlayerFromTournament(authedPlayer.id, tournamentId).then((p) =>
+    res.redirect("/" + tournamentId),
+  );
+});
+
+// Still sticking with HTML, which only has GET and POST
+app.post("/:tournamentId(\\d+)/delete", async (req, res) => {
+  Logger.info("Attempted to delete tournament " + req.params.tournamentId);
+
+  const authedPlayer = await basicAuth(req, res);
+  const tournamentId = parseInt(req.params.tournamentId);
+  const tournament = await getTournamentById(tournamentId);
+  const admins = tournament["admins"];
+  const userIsAdmin = admins
+    .map((admin) => admin.playerId)
+    .includes(authedPlayer.id);
+  if (!userIsAdmin) {
+    res.status(403).send("Not an admin, can't delete this tournament.");
+    return;
+  }
+  deleteTournament(tournamentId).then((t) => res.redirect("/"));
+});
+
+app.use((err, req, res, next) => {
+  Logger.error(err.stack);
+  res.status(500).send("That didn't work...");
+});
+
+async function getAuthedPlayer(req, res): Promise<Player> {
+  return res.locals.isAuthenticated
     ? await getPlayerByEmail(getLocalUserEmail(res))
     : null;
-  const tournamentId = parseInt(req.params.tournamentId);
+}
+
+async function basicAuth(req, res): Promise<Player> {
+  const authedPlayer = await getAuthedPlayer(req, res);
   if (!res.locals.isAuthenticated) {
     res.sendStatus(401);
     return;
@@ -185,12 +182,6 @@ app.post("/withdraw/:tournamentId(\\d+)", async (req, res) => {
     res.sendStatus(403);
     return;
   }
-  withdrawPlayerFromTournament(authedPlayer.id, tournamentId).then((p) =>
-    res.redirect("/" + tournamentId),
-  );
-});
 
-app.use((err, req, res, next) => {
-  Logger.error(err.stack);
-  res.status(500).send("That didn't work...");
-});
+  return authedPlayer;
+}
