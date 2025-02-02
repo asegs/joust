@@ -73,6 +73,9 @@ app.get("/player/:playerId(\\d+)", async (req, res) => {
 
 app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
   const authedPlayer = await basicAuth(req, res);
+  if (!authedPlayer) {
+    return;
+  }
   Logger.info(
     "Requested a rating recalculation for player " + req.params.playerId,
   );
@@ -104,6 +107,9 @@ app.post("/create", async (req, res) => {
   Logger.info("Attempted to create a new tournament");
   Logger.info(req.body);
   const authedPlayer = await basicAuth(req, res);
+  if (!authedPlayer) {
+    return;
+  }
   createTournament(req.body)
     .then((result) => setAdminById(authedPlayer.id, result.id, "owner"))
     .then((result) => res.redirect("/" + result.tournamentId));
@@ -113,6 +119,9 @@ app.post("/player/:playerId(\\d+)", async (req, res) => {
   Logger.info("Attempted to update player " + req.params.playerId);
   Logger.info(req.body);
   const authedPlayer = await basicAuth(req, res);
+  if (!authedPlayer) {
+    return;
+  }
   if (req.body.neutralRating) {
     req.body.neutralRating = parseInt(req.body.neutralRating);
   } else {
@@ -126,6 +135,9 @@ app.post("/player/:playerId(\\d+)", async (req, res) => {
 app.post("/register/:tournamentId(\\d+)", async (req, res) => {
   Logger.info("Attempted to register in tournament " + req.params.tournamentId);
   const authedPlayer = await basicAuth(req, res);
+  if (!authedPlayer) {
+    return;
+  }
   const tournamentId = parseInt(req.params.tournamentId);
   registerPlayerForTournament(authedPlayer.id, tournamentId).then((p) =>
     res.redirect("/" + tournamentId),
@@ -137,6 +149,9 @@ app.post("/withdraw/:tournamentId(\\d+)", async (req, res) => {
     "Attempted to withdraw from tournament " + req.params.tournamentId,
   );
   const authedPlayer = await basicAuth(req, res);
+  if (!authedPlayer) {
+    return;
+  }
   const tournamentId = parseInt(req.params.tournamentId);
   withdrawPlayerFromTournament(authedPlayer.id, tournamentId).then((p) =>
     res.redirect("/" + tournamentId),
@@ -148,6 +163,9 @@ app.post("/:tournamentId(\\d+)/delete", async (req, res) => {
   Logger.info("Attempted to delete tournament " + req.params.tournamentId);
 
   const authedPlayer = await basicAuth(req, res);
+  if (!authedPlayer) {
+    return;
+  }
   const tournamentId = parseInt(req.params.tournamentId);
   const tournament = await getTournamentById(tournamentId);
   const admins = tournament["admins"];
