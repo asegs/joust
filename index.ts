@@ -17,7 +17,7 @@ import {
 } from "./Database";
 import { configureMainWithAuth, getLocalUserEmail } from "./Auth";
 import { getRatingsForUser } from "./Rating";
-import { PAIRING_SYSTEMS, TIEBREAK_SYSTEMS } from "./Organize";
+import { getTournament, PAIRING_SYSTEMS, TIEBREAK_SYSTEMS } from "./Organize";
 import { Prisma, Player } from "@prisma/client";
 
 require("dotenv").config();
@@ -33,53 +33,75 @@ configureMainWithAuth(app);
 app.listen(port, () => {
   Logger.info("Started Joust on port " + process.env.PORT);
 });
-app.get("/tournaments/:search", (req, res) => {
-  Logger.info("Searched tournaments with " + req.params.search);
-  getTournamentsByName(req.params.search).then((result) => res.send(result));
-});
-
-app.get("/tournaments", (req, res) => {
-  Logger.info("Got all tournaments");
-  getTournaments().then((result) => res.send(result));
-});
-
-app.get("/", async (req, res) => {
-  const authedPlayer = await getAuthedPlayer(req, res);
-  Logger.info("Loaded main view");
-  getTournaments().then((result) =>
-    res.render("main", { tournaments: result, authedPlayer: authedPlayer }),
-  );
-});
-
-app.get("/:tournamentId(\\d+)", async (req, res) => {
-  const authedPlayer = await getAuthedPlayer(req, res);
-
-  Logger.info("Loaded page for tournament " + req.params.tournamentId);
-  getTournamentById(parseInt(req.params.tournamentId)).then((result) =>
-    res.render("tournament", {
-      tournament: result,
-      authedPlayer: authedPlayer,
-    }),
-  );
-});
-
-app.get("/player/:playerId(\\d+)", async (req, res) => {
-  const authedPlayer = await getAuthedPlayer(req, res);
-  Logger.info("Loaded page for player " + req.params.playerId);
-  getPlayerById(parseInt(req.params.playerId)).then((result) =>
-    res.render("player", { player: result, authedPlayer: authedPlayer }),
-  );
-});
-
-app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
-  const authedPlayer = await basicAuth(req, res);
-  if (!authedPlayer) {
-    return;
-  }
-  Logger.info(
-    "Requested a rating recalculation for player " + req.params.playerId,
-  );
+app.get("/tournaments/:search", async (req, res, next) => {
   try {
+    Logger.info("Searched tournaments with " + req.params.search);
+    await getTournamentsByName(req.params.search).then((result) =>
+      res.send(result),
+    );
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/tournaments", async (req, res, next) => {
+  try {
+    Logger.info("Got all tournaments");
+    await getTournaments().then((result) => res.send(result));
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/", async (req, res, next) => {
+  try {
+    const authedPlayer = await getAuthedPlayer(req, res);
+    Logger.info("Loaded main view");
+    await getTournaments().then((result) =>
+      res.render("main", { tournaments: result, authedPlayer: authedPlayer }),
+    );
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/:tournamentId(\\d+)", async (req, res, next) => {
+  try {
+    const authedPlayer = await getAuthedPlayer(req, res);
+
+    Logger.info("Loaded page for tournament " + req.params.tournamentId);
+    await getTournamentById(parseInt(req.params.tournamentId)).then((result) =>
+      res.render("tournament", {
+        tournament: result,
+        authedPlayer: authedPlayer,
+      }),
+    );
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/player/:playerId(\\d+)", async (req, res, next) => {
+  try {
+    const authedPlayer = await getAuthedPlayer(req, res);
+    Logger.info("Loaded page for player " + req.params.playerId);
+    await getPlayerById(parseInt(req.params.playerId)).then((result) =>
+      res.render("player", { player: result, authedPlayer: authedPlayer }),
+    );
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.post("/player/:playerId(\\d+)/rating", async (req, res, next) => {
+  try {
+    const authedPlayer = await basicAuth(req, res);
+    if (!authedPlayer) {
+      return;
+    }
+    Logger.info(
+      "Requested a rating recalculation for player " + req.params.playerId,
+    );
     const ratings = await getRatingsForUser(authedPlayer);
     if (Object.values(ratings).length === 0) {
       res.redirect("/player/" + authedPlayer.id);
@@ -87,99 +109,161 @@ app.post("/player/:playerId(\\d+)/rating", async (req, res) => {
     }
     const average = (array) => array.reduce((a, b) => a + b) / array.length;
     authedPlayer.neutralRating = average(Object.values(ratings));
-    await updatePlayer(authedPlayer);
-    res.redirect("/player/" + authedPlayer.id);
+    await updatePlayer(authedPlayer).then((p) =>
+      res.redirect("/player/" + authedPlayer.id),
+    );
   } catch (e) {
-    Logger.error(e);
-    res.status(500).send("Failed to recalculate ratings");
+    next(e);
   }
 });
 
-app.get("/create", (req, res) => {
-  Logger.info("Loaded create new tournament page");
-  res.render("new_tournament", {
-    pairingOptions: PAIRING_SYSTEMS,
-    tiebreakOptions: TIEBREAK_SYSTEMS,
-  });
+app.get("/create", async (req, res, next) => {
+  try {
+    Logger.info("Loaded create new tournament page");
+    await res.render("new_tournament", {
+      pairingOptions: PAIRING_SYSTEMS,
+      tiebreakOptions: TIEBREAK_SYSTEMS,
+    });
+  } catch (e) {
+    next(e);
+  }
 });
 
-app.post("/create", async (req, res) => {
-  Logger.info("Attempted to create a new tournament");
-  Logger.info(req.body);
-  const authedPlayer = await basicAuth(req, res);
-  if (!authedPlayer) {
-    return;
+app.post("/create", async (req, res, next) => {
+  try {
+    Logger.info("Attempted to create a new tournament");
+    Logger.info(req.body);
+    const authedPlayer = await basicAuth(req, res);
+    if (!authedPlayer) {
+      return;
+    }
+    await createTournament(req.body)
+      .then((result) => setAdminById(authedPlayer.id, result.id, "owner"))
+      .then((result) => res.redirect("/" + result.tournamentId));
+  } catch (e) {
+    next(e);
   }
-  createTournament(req.body)
-    .then((result) => setAdminById(authedPlayer.id, result.id, "owner"))
-    .then((result) => res.redirect("/" + result.tournamentId));
 });
 
-app.post("/player/:playerId(\\d+)", async (req, res) => {
-  Logger.info("Attempted to update player " + req.params.playerId);
-  Logger.info(req.body);
-  const authedPlayer = await basicAuth(req, res);
-  if (!authedPlayer) {
-    return;
+app.post("/player/:playerId(\\d+)", async (req, res, next) => {
+  try {
+    Logger.info("Attempted to update player " + req.params.playerId);
+    Logger.info(req.body);
+    const authedPlayer = await basicAuth(req, res);
+    if (!authedPlayer) {
+      return;
+    }
+    if (req.body.neutralRating) {
+      req.body.neutralRating = parseInt(req.body.neutralRating);
+    } else {
+      delete req.body.neutralRating;
+    }
+    await updatePlayer({ ...authedPlayer, ...req.body }).then((p) =>
+      res.redirect("/player/" + req.params.playerId),
+    );
+  } catch (e) {
+    next(e);
   }
-  if (req.body.neutralRating) {
-    req.body.neutralRating = parseInt(req.body.neutralRating);
-  } else {
-    delete req.body.neutralRating;
-  }
-  updatePlayer({ ...authedPlayer, ...req.body }).then((p) =>
-    res.redirect("/player/" + req.params.playerId),
-  );
 });
 
-app.post("/register/:tournamentId(\\d+)", async (req, res) => {
-  Logger.info("Attempted to register in tournament " + req.params.tournamentId);
-  const authedPlayer = await basicAuth(req, res);
-  if (!authedPlayer) {
-    return;
+app.post("/register/:tournamentId(\\d+)", async (req, res, next) => {
+  try {
+    Logger.info(
+      "Attempted to register in tournament " + req.params.tournamentId,
+    );
+    const authedPlayer = await basicAuth(req, res);
+    if (!authedPlayer) {
+      return;
+    }
+    const tournamentId = parseInt(req.params.tournamentId);
+    await registerPlayerForTournament(authedPlayer.id, tournamentId).then((p) =>
+      res.redirect("/" + tournamentId),
+    );
+  } catch (e) {
+    next(e);
   }
-  const tournamentId = parseInt(req.params.tournamentId);
-  registerPlayerForTournament(authedPlayer.id, tournamentId).then((p) =>
-    res.redirect("/" + tournamentId),
-  );
 });
 
-app.post("/withdraw/:tournamentId(\\d+)", async (req, res) => {
-  Logger.info(
-    "Attempted to withdraw from tournament " + req.params.tournamentId,
-  );
-  const authedPlayer = await basicAuth(req, res);
-  if (!authedPlayer) {
-    return;
+app.post("/withdraw/:tournamentId(\\d+)", async (req, res, next) => {
+  try {
+    Logger.info(
+      "Attempted to withdraw from tournament " + req.params.tournamentId,
+    );
+    const authedPlayer = await basicAuth(req, res);
+    if (!authedPlayer) {
+      return;
+    }
+    const tournamentId = parseInt(req.params.tournamentId);
+    await withdrawPlayerFromTournament(authedPlayer.id, tournamentId).then(
+      (p) => res.redirect("/" + tournamentId),
+    );
+  } catch (e) {
+    next(e);
   }
-  const tournamentId = parseInt(req.params.tournamentId);
-  withdrawPlayerFromTournament(authedPlayer.id, tournamentId).then((p) =>
-    res.redirect("/" + tournamentId),
-  );
 });
 
 // Still sticking with HTML, which only has GET and POST
-app.post("/:tournamentId(\\d+)/delete", async (req, res) => {
-  Logger.info("Attempted to delete tournament " + req.params.tournamentId);
+app.post("/:tournamentId(\\d+)/delete", async (req, res, next) => {
+  try {
+    Logger.info("Attempted to delete tournament " + req.params.tournamentId);
 
-  const authedPlayer = await basicAuth(req, res);
-  if (!authedPlayer) {
-    return;
+    const authedPlayer = await basicAuth(req, res);
+    if (!authedPlayer) {
+      return;
+    }
+    const tournamentId = parseInt(req.params.tournamentId);
+    const deleteKeyword = req.body.key;
+    if (deleteKeyword !== "delete") {
+      res.redirect("/" + req.params.tournamentId);
+      return;
+    }
+    const tournament = await getTournamentById(tournamentId);
+    const admins = tournament["admins"];
+    const userIsAdmin = admins
+      .map((admin) => admin.playerId)
+      .includes(authedPlayer.id);
+    if (!userIsAdmin) {
+      res.status(403).send("Not an admin, can't delete this tournament.");
+      return;
+    }
+    await deleteTournament(tournamentId).then((t) => res.redirect("/"));
+  } catch (e) {
+    next(e);
   }
-  const tournamentId = parseInt(req.params.tournamentId);
-  const tournament = await getTournamentById(tournamentId);
-  const admins = tournament["admins"];
-  const userIsAdmin = admins
-    .map((admin) => admin.playerId)
-    .includes(authedPlayer.id);
-  if (!userIsAdmin) {
-    res.status(403).send("Not an admin, can't delete this tournament.");
-    return;
+});
+
+app.post("/:tournamentId(\\d+)/pair", async (req, res, next) => {
+  try {
+    Logger.info("Attempted to pair tournament " + req.params.tournamentId);
+
+    const authedPlayer = await basicAuth(req, res);
+    if (!authedPlayer) {
+      return;
+    }
+
+    const tournamentId = parseInt(req.params.tournamentId);
+
+    const tournament = await getTournamentById(tournamentId);
+    const admins = tournament["admins"];
+    const userIsAdmin = admins
+      .map((admin) => admin.playerId)
+      .includes(authedPlayer.id);
+    if (!userIsAdmin) {
+      res.status(403).send("Not an admin, can't pair this tournament.");
+      return;
+    }
+
+    const pairingTournament = getTournament(tournament);
+
+    console.log(pairingTournament);
+    res.redirect("/" + req.params.tournamentId);
+  } catch (e) {
+    next(e);
   }
-  deleteTournament(tournamentId).then((t) => res.redirect("/"));
 });
 
 app.use((err, req, res, next) => {
+  Logger.error(err.message);
   Logger.error(err.stack);
   res.status(500).send("That didn't work...");
 });

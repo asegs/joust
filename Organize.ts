@@ -10,7 +10,7 @@ export function pairTournament(
 ) {
   const tournament = getTournament(tournamentDbObject);
 }
-function getTournament(tournamentDbObject: DbTournament) {
+export function getTournament(tournamentDbObject: DbTournament) {
   if (tournamentDbObject.id in activeTournaments) {
     return activeTournaments[tournamentDbObject.id];
   }
@@ -36,11 +36,28 @@ function createTournament(tournamentDbObject: DbTournament) {
     return player;
   });
 
+  const stageOne = {
+    consolation: false,
+    format: tournamentDbObject.pairingSystem,
+    initialRound: 1,
+    maxPlayers: tournamentDbObject.maxPlayers,
+    rounds: tournamentDbObject.rounds,
+  };
+
+  const settings = {
+    bye: 1,
+    win: 1,
+    draw: 0.5,
+    loss: 0,
+    tiebreaks: [tournamentDbObject.tiebreakSystem],
+  };
   const tournament = new Tournament(
     String(tournamentDbObject.id),
     tournamentDbObject.name,
   );
   tournament.players = players;
+  tournament.stageOne = stageOne;
+  tournament.settings = settings;
   return tournament;
 }
 
