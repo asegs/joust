@@ -255,7 +255,6 @@ app.post("/:tournamentId(\\d+)/pair", async (req, res, next) => {
 
     const pairingTournament = getTournament(tournament);
 
-    console.log(pairingTournament);
     res.redirect("/" + req.params.tournamentId);
   } catch (e) {
     next(e);
