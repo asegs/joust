@@ -9,6 +9,10 @@ body {
     color: red;
 }
 
+.error {
+    color: red;
+}
+
 label {
     display: inline-block;
     width: 180px;

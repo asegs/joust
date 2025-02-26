@@ -18,7 +18,7 @@ import {
 import { configureMainWithAuth, getLocalUserEmail } from "./Auth";
 import { getRatingsForUser } from "./Rating";
 import { getTournament, PAIRING_SYSTEMS, TIEBREAK_SYSTEMS } from "./Organize";
-import { Prisma, Player } from "@prisma/client";
+import { Player } from "@prisma/client";
 
 require("dotenv").config();
 
@@ -261,10 +261,22 @@ app.post("/:tournamentId(\\d+)/pair", async (req, res, next) => {
   }
 });
 
+app.get("/error", async (req, res, next) => {
+  const authedPlayer = await basicAuth(req, res);
+  if (!authedPlayer) {
+    return;
+  }
+  const errorMessage = req.query.message || "Unknown error occurred";
+  res.render("error.pug", {
+    message: errorMessage,
+    authedPlayer: authedPlayer,
+  });
+});
+
 app.use((err, req, res, next) => {
   Logger.error(err.message);
   Logger.error(err.stack);
-  res.status(500).send("That didn't work...");
+  res.redirect("/error?message=" + err.message);
 });
 
 async function getAuthedPlayer(req, res): Promise<Player> {
